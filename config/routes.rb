@@ -8,7 +8,15 @@ Rails.application.routes.draw do
     resources :likes, only: [:index, :create]
   end
 
-  resources :post_revisions, only: [:index, :show]
+#filter posts only chnages the parameters that passed 
+# get 'posts'  (post_id as a parameter.)                #filter posts by author name
+# get 'posts'  (params[:date] as a parameter.)          #filter posts by published date
+# get 'posts'  (:sort_by= 'likes' as a parameter.)       #filter/sorts posts by likes
+# get 'posts'  (:sort_by = 'comments' as a parameter.)   #filter posts by comments
+
+#for top_posts and recommended_posts routes are crated below in level 3
+
+
 
   resources :users, except: [:new, :edit] do
     resources :posts, only: [:index]
@@ -47,11 +55,19 @@ Rails.application.routes.draw do
  # Payments
  post '/payments/create', to: 'payments#create'
 
+
+ #revision history
+ resources :post_revisions, only: [:index, :show]
+
   #level five
   resources :lists, only: [:create, :index, :show] do
     post 'share', on: :member
     post 'add_post', on: :member   #/lists/:id/add_post  (post_id as a parameter.)
+    
   end
+  get '/list_posts', to: 'lists#list_posts'   #(list_id as parameter)
+
+
   resources :drafts, except: [:edit, :new]
   post 'drafts/:id/publish', to: 'drafts#publish'
 

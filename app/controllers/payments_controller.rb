@@ -3,13 +3,24 @@ class PaymentsController < ApplicationController
         # Get the current user
         user = current_user
     
-        # Tokenize the payment information
-        token = params[:stripeToken]
-    
+        # # Tokenize the payment information
+        # token = Stripe::Token.create({
+        #   card: {
+        #     number: '4000003560000008',
+        #     exp_month: 12,
+        #     exp_year: 2023,
+        #     cvc: '123'
+        #   }
+        # })
+
+        # # token = params[:stripeToken]
+        # token_id=token.id
+        test_token = "tok_in"
+        amount=params[:amount]
         # Create a Stripe customer with the token
         customer = Stripe::Customer.create(
           email: user.email,
-          source: token
+          source: test_token
         )
     
         # Charge the customer

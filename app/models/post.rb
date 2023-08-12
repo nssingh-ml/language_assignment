@@ -7,6 +7,8 @@ class Post < ApplicationRecord
   has_and_belongs_to_many :lists
   has_many :saved_posts
 
+  has_many :post_revisions
+
   has_many :post_topics
   # has_many :topics, through: :post_topics
 

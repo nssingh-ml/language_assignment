@@ -3,6 +3,11 @@ class DraftsController < ApplicationController
     before_action :authenticate_request
     before_action :set_draft, only: [:show, :update, :publish]
 
+    def index
+        drafts = Draft.all
+        render json: drafts
+      end
+
     def create
         draft = current_user.drafts.build(draft_params)
         if draft.save

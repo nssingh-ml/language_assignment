@@ -4,7 +4,8 @@ class PostsController < ApplicationController
     # before_action :set_post, only: [:show, :update, :destroy, :more_posts_by_author]
 
   def index
-    posts = Post.all
+    posts = Post.includes(:user).all
+    
 
     # Filter by author name
     if params[:user_id]
@@ -31,7 +32,24 @@ class PostsController < ApplicationController
                 .group('posts.id')
                 .order('comments_count DESC')
   end
-    render json: posts
+  post_data = posts.map do |post|
+    {
+      id: post.id,
+      title: post.title,
+      topic: post.topic.name,
+      description: post.description,
+      # image: post.image,
+      likes_count: post.likes_count,
+      comments_count: post.commenets_count,
+      # published_at: post.published_at,
+      views: post.views,
+      read_time: post.min_read_time,
+      author_name: post.user.name,
+      published_at: post.created_at,
+      author_id: post.user.id
+    }
+end
+    render json: post_data
     
   end
 
@@ -45,6 +63,73 @@ class PostsController < ApplicationController
     if Post.find(params[:id])
       @post = Post.find(params[:id])
       @post.increment_views
+    #   posts=@post.as_json(
+    #     methods: [:image_url],
+    #     include: [:user, :topic, { comments: { include: :user } }, { likes: { include: :user } }]
+    # )
+    # post_data=posts.map do |post|
+    #   {
+    #     id: post.id,
+    #     title: post.title,
+    #     topic: post.topic.name,
+    #     description: post.description,
+    #     # image: post.image,
+    #     likes_count: post.likes_count,
+    #     comments_count: post.commenets_count,
+    #     # published_at: post.published_at,
+    #     views: post.views,
+    #     read_time: post.min_read_time,
+    #     author_name: post.user.name,
+    #     published_at: post.created_at,
+    #     author_id: post.user.id
+    #     comments: post.comments.each { |comment| user_name: comment.user.name,content: comment.content},
+    #       # custom_post[:comments] << 
+    #     #   {
+    #     #       user_name: comment.user.name,
+    #     #       content: comment.content
+    #     #   }
+    #     # end,
+    #     likes: [],
+    #     image_url: post.image_url
+        
+    #   }
+    # custom_posts = []
+    # posts.each do |post|
+    #     custom_post = {
+    #     id: post.id,
+    #     title: post.title,
+    #     description: post.description,
+    #     author_name: post.user.name,
+    #     topic_name: post.topic.name,
+    #     likes_count: post.likes_count,
+    #     comments_count: post.commenets_count,
+    #     # views: post.views,
+    #     read_time: post.min_read_time,
+        
+    #     published_at: post.created_at,
+    #     author_id: post.user.id,
+    #     comments: [],
+    #     likes: [],
+    #     image_url: post.image_url
+    #     }
+        
+    #     post.comments.each do |comment|
+    #     custom_post[:comments] << {
+    #         user_name: comment.user.name,
+    #         content: comment.content
+    #     }
+    #     end
+        
+    #     post.likes.each do |like|
+    #     custom_post[:likes] << {
+    #         user_name: like.user.name
+    #     }
+    #     end
+        
+    #     custom_posts << custom_post
+    # end
+    # render json custom_posts;
+    # render json post_data
       render json: @post.as_json(
           methods: [:image_url],
           include: [:user, :topic, { comments: { include: :user } }, { likes: { include: :user } }]

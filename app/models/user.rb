@@ -17,6 +17,8 @@ class User < ApplicationRecord
     has_many :saved_posts
     has_many :drafts
 
+    # has_many :post_revisions, foreign_key: 'editor_id'
+    has_many :post_revisions, through: :posts
 
 
 

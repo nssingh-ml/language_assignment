@@ -38,6 +38,26 @@ class ListsController < ApplicationController
     end
   end
 
+
+  def list_posts
+    list = List.find(params[:list_id])
+    list_posts = list.posts.includes(:user).all
+    
+    post_data = list_posts.map do |post|
+        {
+          id: post.id,
+          title: post.title,
+          topic: post.topic.name,
+          text: post.description,
+          # image: post.image,
+          likes_count: post.likes_count,
+          comments_count: post.commenets_count,
+          author_name: post.user.name
+        }
+    end
+    render json: post_data, status: :ok
+  end
+
   private
 
   def list_params
