@@ -1,7 +1,7 @@
 class PostsController < ApplicationController
-    skip_before_action :authenticate_request
-    # before_action :authenticate_request, only: [:create, :update, :destroy]
-    before_action :set_post, only: [:show, :update, :destroy, :more_posts_by_author]
+    # skip_before_action :authenticate_request
+    before_action :authenticate_request, only: [:new, :create, :update, :destroy]
+    # before_action :set_post, only: [:show, :update, :destroy, :more_posts_by_author]
 
   def index
     posts = Post.all
@@ -36,24 +36,34 @@ class PostsController < ApplicationController
   end
 
   def show
+    # @post = Post.find(params[:id])
     if @current_user && !@current_user.already_following?(@post.user)
         @current_user.followees << @post.user
     end
-    @post.increment_views
+    
     #   render json: @post, include: [:user, comments: { include: :user }]
-    @post = Post.find(params[:id])
-    render json: @post.as_json(
-        methods: [:image_url],
-        include: [:user, :topic, { comments: { include: :user } }, { likes: { include: :user } }]
-    )
+    if Post.find(params[:id])
+      @post = Post.find(params[:id])
+      @post.increment_views
+      render json: @post.as_json(
+          methods: [:image_url],
+          include: [:user, :topic, { comments: { include: :user } }, { likes: { include: :user } }]
+      )
+    else
+      render json: { message: 'Post not found for the given id' }
+    end
     # render json: @post, include: [:user, :topic, :comments, :likes]
   end
 
   def create
     @post = Post.new(post_params)
-    @post.user_id = params[:post][:user_id]
-    @post.topic_id = params[:post][:topic_id]
+    # @post.user_id = params[:post][:user_id]
+    # @post.topic_id = params[:post][:topic_id]
+    @post.user_id=current_user.id
+    min_read_time=@post.calculate_reading_time(@post.description)
     if @post.save
+      # Create a new post revision
+      PostRevision.create(content: @post.description, post: @post, editor: @current_user)
         render json: @post.as_json(
       methods: [:image_url],  # Include the image_url method
       include: [:user, :topic]
@@ -65,7 +75,10 @@ class PostsController < ApplicationController
   end
 
   def update
+    @post = Post.find(params[:id])
     if @post.update(post_params)
+      # Create a new post revision
+      PostRevision.create(content: @post.description, post: @post, editor: @current_user)
       render json: @post
     else
       render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
@@ -73,6 +86,7 @@ class PostsController < ApplicationController
   end
 
   def destroy
+    @post = Post.find(params[:id])
     @post.destroy
     render json: { message: 'Post deleted successfully' }
   end
@@ -80,6 +94,7 @@ class PostsController < ApplicationController
 
 #   //specific functionality of level 3
     def more_posts_by_author
+        @post = Post.find(params[:id])
         author_id = @post.user_id
         posts = Post.where(user_id: author_id).where.not(id: @post.id)
         render json: posts, include: [:user, :topic, :comments, :likes]
@@ -126,11 +141,12 @@ class PostsController < ApplicationController
 
   private
 
-  def set_post
-    @post = Post.find(params[:id])
-  end
+  # def set_post
+  #   @post = Post.find(params[:id])
+  # end
 
   def post_params
-    params.require(:post).permit(:title,:description, :user_id,:topic_id,:min_read_time, :image)
+    # params.require(:post).permit(:title,:description, :user_id,:topic_id,:min_read_time, :image)
+    params.permit(:title,:description, :user_id,:topic_id, :image)
   end
 end

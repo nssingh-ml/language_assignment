@@ -3,9 +3,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby "3.2.2"
 
-gem 'bcrypt', '~> 3.1.7'
-gem 'devise'
-gem 'jwt'
+
 
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
@@ -52,6 +50,24 @@ gem "bootsnap", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 # gem "image_processing", "~> 1.2"
+
+
+
+
+# for password encryption
+gem 'bcrypt', '~> 3.1.7'
+
+# for authentication
+gem 'devise'
+
+
+gem 'jwt'
+
+gem 'rack-cors'
+
+gem 'stripe' 
+
+
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

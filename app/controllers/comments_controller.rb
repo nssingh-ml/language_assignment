@@ -1,5 +1,6 @@
 class CommentsController < ApplicationController
-  skip_before_action :authenticate_request
+  # skip_before_action :authenticate_request
+  before_action :authenticate_request, only: [:create, :destroy]
   # before_action :authenticate_user!, only: [:create, :destroy]
     before_action :set_comment, only: [:show, :update, :destroy]
 
@@ -61,6 +62,7 @@ class CommentsController < ApplicationController
   end
 
   def comment_params
-    params.require(:comment).permit(:content, :user_id, :post_id)
+    # params.require(:comment).permit(:content, :user_id, :post_id)
+    params.permit(:content, :user_id, :post_id)
   end
 end

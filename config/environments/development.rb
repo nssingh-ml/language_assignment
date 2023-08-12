@@ -67,4 +67,12 @@ Rails.application.configure do
 
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true
+
+  #payemet gateway interface
+  
+  # config.stripe.secret_key = ENV['sk_test_51NeHfNSEGkcbRibwwjrOyg5Uh0uwwQdOFH6803tEWslsO71LY10nNuYx09AOBl6dF5rYGZOSIMifEhcBmeyOTTGw00Ap1Tfrru']
+  # config.stripe.publishable_key = ENV['pk_test_51NeHfNSEGkcbRibw9zbTxGOJxJA4YSVMSGLNTaPh4uQBe77MHvjqYHdDhGdBLmXHhqAHIgarumij1LziNFoLmUWT00i5beQDrE']
+
+
+  config.hosts << "e245-117-96-170-57.ngrok-free.app"
 end

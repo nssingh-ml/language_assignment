@@ -13,7 +13,9 @@ class LikesController < ApplicationController
   end
 
   def create
-
+    # puts @current_user.id
+    @current_user=User.find(params[:user_id])
+    @post=Post.find(params[:post_id])
     if @current_user.already_liked?(@post)
         @current_user.likes.find_by(post: @post).destroy
         @post.decrement_likes_count

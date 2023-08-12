@@ -2,14 +2,20 @@ class FollowersController < ApplicationController
     before_action :set_follower, only: :destroy
 
     def create
-        follower = current_user.followers.build(follower_id: params[:follower_id])
-        if follower.save
-        render json: follower, status: :created
-        else
-        render json: { errors: follower.errors.full_messages }, status: :unprocessable_entity
-        end
+        user=User.find(params[:follower_id])
+        # follower = current_user.followers.build(follower_id: params[:follower_id])
+        current_user.followers << user
+        # if follower.save
+        render json: current_user.followers, status: :created
+        # else
+        # render json: { errors: follower.errors.full_messages }, status: :unprocessable_entity
+        # end
     end
 
+
+    def show_all
+        render json: current_user.followers
+    end
     def destroy
         @follower.destroy
         render json: { message: 'Unfollowed successfully' }

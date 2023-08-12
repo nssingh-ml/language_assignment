@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_08_04_190448) do
+ActiveRecord::Schema[7.0].define(version: 2023_08_12_144841) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -47,6 +47,17 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_04_190448) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "drafts", force: :cascade do |t|
+    t.string "title"
+    t.integer "topic_id"
+    t.text "description"
+    t.string "image"
+    t.integer "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_drafts_on_user_id"
+  end
+
   create_table "followees", force: :cascade do |t|
     t.integer "user_id"
     t.integer "followee_id"
@@ -66,6 +77,27 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_04_190448) do
     t.integer "post_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "lists", force: :cascade do |t|
+    t.string "name"
+    t.integer "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_lists_on_user_id"
+  end
+
+  create_table "lists_posts", id: false, force: :cascade do |t|
+    t.integer "list_id", null: false
+    t.integer "post_id", null: false
+  end
+
+  create_table "post_revisions", force: :cascade do |t|
+    t.text "content"
+    t.integer "post_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["post_id"], name: "index_post_revisions_on_post_id"
   end
 
   create_table "post_topics", force: :cascade do |t|
@@ -92,6 +124,15 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_04_190448) do
     t.index ["user_id"], name: "index_posts_on_user_id"
   end
 
+  create_table "saved_posts", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "post_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["post_id"], name: "index_saved_posts_on_post_id"
+    t.index ["user_id"], name: "index_saved_posts_on_user_id"
+  end
+
   create_table "topics", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -111,8 +152,13 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_04_190448) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "drafts", "users"
+  add_foreign_key "lists", "users"
+  add_foreign_key "post_revisions", "posts"
   add_foreign_key "post_topics", "posts"
   add_foreign_key "post_topics", "topics"
   add_foreign_key "posts", "topics"
   add_foreign_key "posts", "users"
+  add_foreign_key "saved_posts", "posts"
+  add_foreign_key "saved_posts", "users"
 end

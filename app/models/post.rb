@@ -4,6 +4,9 @@ class Post < ApplicationRecord
   has_many :likes, dependent: :destroy
   has_many :comments, dependent: :destroy
 
+  has_and_belongs_to_many :lists
+  has_many :saved_posts
+
   has_many :post_topics
   # has_many :topics, through: :post_topics
 
@@ -47,6 +50,13 @@ class Post < ApplicationRecord
     end
   end
 
-
+  def calculate_reading_time(content)
+    words_per_minute = 20
+    words = content.split.size
+    # (words.to_f / words_per_minute).ceil
+    reading_time = (words.to_f / words_per_minute).ceil
+    reading_time = 1 if reading_time.zero? # Set to 1 if reading time is 0
+    reading_time
+  end
 
 end

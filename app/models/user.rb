@@ -13,6 +13,10 @@ class User < ApplicationRecord
     has_many :likes, dependent: :destroy
     has_many :comments, dependent: :destroy
 
+    has_many :lists
+    has_many :saved_posts
+    has_many :drafts
+
 
 
 
