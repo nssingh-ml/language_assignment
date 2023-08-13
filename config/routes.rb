@@ -59,8 +59,6 @@ Rails.application.routes.draw do
   get '/users/showall', to: 'users#all_users'
   get '/users/search', to: 'users#search_user'
   delete '/users/delete/:id', to: 'users#destroy'
-  # post '/users/follow/:author_id', to: 'users#follow_unfollow'
-  # get '/users/follow/:author_id', to: 'users#check_follow'
   put '/users/update', to: 'users#update'                     #also pass password parameter for authentication with others param
   get '/users/details/:id', to: 'users#show'
   post '/users/saveForLater/:post_id', to:'users#save_for_later'
