@@ -1,8 +1,8 @@
 class TopicsController < ApplicationController
-    skip_before_action :authenticate_request
-    before_action :set_topic, only: [:show, :edit, :update, :destroy]
+    before_action :authenticate_request, only: [:create, :delete]
+    before_action :set_topic, only: [:show, :edit, :update, :delete]
 
-  def index
+  def show_all_topics
     @topics = Topic.all
     render json: @topics
   end
@@ -21,11 +21,9 @@ class TopicsController < ApplicationController
     #   redirect_to @topic, notice: 'Topic was successfully created.'
       render json:topic, status: :created
     else
-      render :new, notice: 'Topic was unsuccessfully created.'
+      # render :new, notice: 'Topic was unsuccessfully created.'
+      render json: { message: 'Topic was unsuccessfully created.' }
     end
-  end
-
-  def edit
   end
 
   def update
@@ -36,9 +34,9 @@ class TopicsController < ApplicationController
     end
   end
 
-  def destroy
+  def delete
     @topic.destroy
-    redirect_to topics_url, notice: 'Topic was successfully deleted.'
+    render json: { message: 'topic deleted successfully' }
   end
 
   private

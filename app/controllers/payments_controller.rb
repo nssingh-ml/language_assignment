@@ -15,48 +15,67 @@ class PaymentsController < ApplicationController
 
         # # token = params[:stripeToken]
         # token_id=token.id
-        test_token = "tok_in"
+        # test_token = "tok_in"
         amount=params[:amount]
-        # Create a Stripe customer with the token
-        customer = Stripe::Customer.create(
-          email: user.email,
-          source: test_token
-        )
     
-        # Charge the customer
-        charge = Stripe::Charge.create(
-          customer: customer.id,
-          amount: amount, # Amount in rupee
-          description: 'Payment for Subscription',
-          currency: 'usd'
-        )
-    
+
+        charge = Stripe::PaymentIntent.create({
+          amount: amount,
+          currency: 'usd',
+          description: 'Example Charge',
+          payment_method: 'pm_card_visa',
+          # source: token
+      })
         # Handle successful payment
-        if charge.paid
-          # Update your application's logic here (e.g., mark order as paid)
-        #   render json: { message: 'Payment successful' }
-            payment_amount = params[:amount] # Assuming you pass the payment amount in the request
+        if charge.status = "succeeded"
+            payment_amount = amount.to_i # Assuming you pass the payment amount in the request
             subscription_tier = determine_subscription_tier(payment_amount) # Implement this logic
 
             if subscription_tier.present?
-                @user.update(subscription: subscription_tier)
-                render json: { message: 'Payment successful. Subscription tier updated.' }
+                # current_user.subscription=subscription_tier
+                current_user.update(subscription: subscription_tier)
+                render json: { message: 'Payment successful. Subscription tier updated.',user: current_user}
+                # render json: current_user;
             else
                 render json: { message: 'Payment successful. Subscription tier not updated.' }, status: :unprocessable_entity
             end
 
         else
-          render json: { message: 'Payment failed' }, status: :unprocessable_entity
+          
+          render json: { message: 'Payment failed'}, status: :unprocessable_entity
         end
+        flash[:success] = "Payment successful!"
       rescue Stripe::CardError => e
         render json: { message: e.message }, status: :unprocessable_entity
       end
 
       private
+      
+      def determine_subscription_tier(payment_amount)
+        # if payment_amount<=3
+        #   "tier1"
+        # elsif payment_amount<=5
+        #   "tier2"
+        # elsif payment_amount<=10
+        #   "tier3"
+        # else
+        #   0
+        # end
+        case payment_amount
+        when 3
+          "tier1"
+        when 5
+          "tier2"
+        when 10
+          "tier3"
+        else
+          0 # Subscription tier not determined
+        end
+      end
 
       def payment_params
           params.permit(
-              :stripeToken,
+              :stripeToken,   #not needed for testing
               :amount
               )
       end

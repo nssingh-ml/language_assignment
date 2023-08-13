@@ -45,7 +45,7 @@ class ListsController < ApplicationController
     
     post_data = list_posts.map do |post|
         {
-          id: post.id,
+          post_id: post.id,
           title: post.title,
           topic: post.topic.name,
           text: post.description,

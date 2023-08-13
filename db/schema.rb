@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_08_12_144841) do
+ActiveRecord::Schema[7.0].define(version: 2023_08_13_102122) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -97,6 +97,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_12_144841) do
     t.integer "post_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "editor_id"
+    t.index ["editor_id"], name: "index_post_revisions_on_editor_id"
     t.index ["post_id"], name: "index_post_revisions_on_post_id"
   end
 
@@ -155,6 +157,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_12_144841) do
   add_foreign_key "drafts", "users"
   add_foreign_key "lists", "users"
   add_foreign_key "post_revisions", "posts"
+  add_foreign_key "post_revisions", "users", column: "editor_id"
   add_foreign_key "post_topics", "posts"
   add_foreign_key "post_topics", "topics"
   add_foreign_key "posts", "topics"

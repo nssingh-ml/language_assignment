@@ -1,16 +1,20 @@
 class UsersController < ApplicationController
-    skip_before_action :authenticate_request, only: [:new, :create, :update, :purchase_subscription]
-    # skip_before_action :authenticate_request
-    # before_action :authenticate_request, only: [:purchase_subscription]
-    before_action :authenticate_request, only: [:index, :show, :purchase_subscription]
-    before_action :set_user, only: [:show, :update, :destroy, :purchase_subscription]
+    skip_before_action :authenticate_request, only: [:new, :create, :purchase_subscription]
+    before_action :authenticate_request, only: [:index, :show, :purchase_subscription, :update,:save_for_later, :my_details, :show_all_saved]
+  
+  #uncommment it if you are using routes through resources
+  # def index
+  #   users = User.all
+  #   render json: users
+  # end
 
-  def index
-    users = User.all
-    render json: users
+  def all_users
+    users =  User.all.select(:id,:name,:about)
+    render json: users, status: :ok
   end
 
   def show
+    @user = User.find(params[:id])
     render json: @user, include: :posts
   end
 
@@ -24,7 +28,8 @@ class UsersController < ApplicationController
   end
 
   def update
-
+    # @user = User.find(params[:id])
+    @user=current_user
     if @user.update(user_params)
       render json: @user
     else
@@ -32,53 +37,36 @@ class UsersController < ApplicationController
     end
   end
 
-  def my_posts
-    # user = User.find( @current_user.id)
-    @user=current_user
-    posts = @user.posts
-    render json: posts
-  end
+  # def my_posts
+  #   # user = User.find( @current_user.id)
+  #   @user=current_user
+  #   posts = current_user.posts
+  #   render json: posts
+  # end
 
   def destroy
+    @user = User.find(params[:id])
     @user.destroy
     render json: { message: 'User deleted successfully' }
   end
 
-
-
-  def purchase_subscription
-
-    payment_amount = params[:payment_amount] # Amount paid by the user
-    subscription_tier = determine_subscription_tier(payment_amount) # Implement this logic
-
-    if subscription_tier.present?
-      stripe_subscription = create_stripe_subscription(subscription_tier) # Implement this logic
-
-      if stripe_subscription.present?
-        if @user.update(subscription: subscription_tier, stripe_subscription_id: stripe_subscription.id)
-          render json: { message: "Subscription purchased successfully." }
-        else
-          render json: { error: "Failed to purchase subscription." }, status: :unprocessable_entity
-        end
-      else
-        render json: { error: "Failed to create Stripe subscription." }, status: :unprocessable_entity
-      end
+  def search_users
+    if params[:search].present?
+      search_query = params[:search].strip.downcase
+      
+      where_clause = "lower(name) LIKE '%"+search_query+"%'"
+      # Find articles that match the search query in title, description, or tags
+      users = User.where(where_clause).select(:id,:name)
     else
-      render json: { error: "Invalid payment amount." }, status: :unprocessable_entity
+      users = User.all.select(:id,:name)
     end
 
-    # subscription = params[:subscription] # Assuming subscription is passed as a parameter
-    # # user = @current_user # Assuming you have a method to fetch the current user
-  
-    # if @user.update(subscription: subscription)
-    #   render json: { message: "Subscription purchased successfully." }
-    # else
-    #   render json: { error: "Failed to purchase subscription." }, status: :unprocessable_entity
-    # end
+    render json: users, status: :ok
   end
 
 
-  def save_for_later_add
+
+  def save_for_later
     post = Post.find(params[:post_id])
 
     if !@current_user.saved_posts.exists?(post.id)
@@ -90,57 +78,39 @@ class UsersController < ApplicationController
   end
 
   def show_all_saved
-    saved_posts = @current_user.saved_posts.includes(post: :author)
+    saved_posts = @current_user.saved_posts.includes(post: :user)
     saved_data = saved_posts.map do |save_for_later|
       post = save_for_later.post
       {
         save_for_later_id: save_for_later.id,
         post_id: post.id,
         post_title: post.title,
-        topic: post.topic,
-        featured_image: post.featured_image,
-        text: post.text,
-        author_name: post.author.name,
+        topic: post.topic.name,
+        featured_image: post.image_url,
+        description: post.description,
+        author_name: post.user.name,
         likes_count: post.likes_count,
-        comments_count: post.comments_count
+        comments_count: post.commenets_count
       }
     end
     render json: saved_data, status: :ok
   end
 
+  def my_details
+    # user = user.find(current_user.id)
+    follower_count=current_user.followers.count
+    @user = current_user.slice(:id,:name, :email, :about)
+    render json: { user: @user, followers_count: follower_count }, status: :ok
+    # render json: user,status: :ok
+  end
+
 
   private
 
-
-
-  def determine_subscription_tier(payment_amount)
-    case payment_amount
-    when 3
-      "tier1"
-    when 5
-      "tier2"
-    when 10
-      "tier3"
-    else
-      nil # Subscription tier not determined
-    end
-  end
-
-  def create_stripe_subscription(subscription_tier)
-    # Call the Stripe API to create a subscription
-    stripe_subscription = Stripe::Subscription.create(
-      customer: @current_user.stripe_customer_id,
-      items: [{ plan: subscription_tier }]
-    )
-    stripe_subscription
-   rescue Stripe::StripeError => e
-    nil
-  end
-
-  def set_user
-    # @user=@current_user
-    @user = User.find(params[:id])
-  end
+  # def set_user
+  #   # @user=@current_user
+  #   @user = User.find(params[:id])
+  # end
 
     def user_params
       params.permit(:name, :password, :email, :mob_no, :about)
