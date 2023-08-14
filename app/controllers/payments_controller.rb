@@ -40,7 +40,7 @@ class PaymentsController < ApplicationController
           
           render json: { message: 'Payment failed',stauts:charge.status}, status: :unprocessable_entity
         end
-        flash[:success] = "Payment successful!"
+        # flash[:success] = "Payment successful!"
       rescue Stripe::CardError => e
         render json: { message: e.message }, status: :unprocessable_entity
       end
