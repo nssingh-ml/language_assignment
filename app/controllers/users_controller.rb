@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
-    skip_before_action :authenticate_request, only: [:new, :create, :purchase_subscription]
-    before_action :authenticate_request, only: [:index, :show, :purchase_subscription, :update,:save_for_later, :my_details, :show_all_saved]
+    skip_before_action :authenticate_request, only: [:new, :create]
+    before_action :authenticate_request, only: [:index, :show, :my_subscription, :update,:save_for_later, :my_details, :show_all_saved]
   
   #uncommment it if you are using routes through resources
   # def index
@@ -10,12 +10,14 @@ class UsersController < ApplicationController
 
   def all_users
     users =  User.all.select(:id,:name,:about)
-    render json: users, status: :ok
+    # render json: {users,methods: :subscription_plan}, status: :ok
+    render json: users.as_json(methods: :subscription_plan), status: :ok
   end
 
   def show
     @user = User.find(params[:id])
-    render json: @user, include: :posts
+    render json: @user.to_json(include: :posts, methods: :subscription_plan)
+    # render json: @user, include: :posts
   end
 
   def create
@@ -64,7 +66,9 @@ class UsersController < ApplicationController
     render json: users, status: :ok
   end
 
-
+  def my_subscription
+    render json: @current_user.subscription_plan, status: :ok
+  end
 
   def save_for_later
     post = Post.find(params[:post_id])

@@ -22,9 +22,20 @@ class ListsController < ApplicationController
   end
 
   def share
-    list = current_user.lists.find(params[:id])
-    # Implement share logic here
-    render json: { message: "List shared successfully." }
+    begin
+      list = current_user.lists.find(params[:id])
+      recipient_email=params[:recipient_email]
+      #share logic here
+      if list
+          ShareListAndPostMailer.share_list_email(list, @current_user, recipient_email).deliver_now
+          # redirect_to list, notice: "List shared successfully"
+          render json: {message: "list shared successfully"}, status: :ok
+      else
+          render json: {message: 'list not found'}, status: :not_found
+      end
+    rescue => e
+      render  json: { error: e.message }, status: :internal_server_error 
+    end
   end
 
   def add_post

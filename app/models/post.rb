@@ -9,6 +9,9 @@ class Post < ApplicationRecord
 
   has_many :post_revisions
 
+  has_many :post_views
+  has_many :viewed_by_users, through: :post_views, source: :user
+
   has_many :post_topics
   # has_many :topics, through: :post_topics
 

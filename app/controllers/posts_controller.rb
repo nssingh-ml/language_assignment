@@ -1,6 +1,6 @@
 class PostsController < ApplicationController
-    # skip_before_action :authenticate_request
-    before_action :authenticate_request, only: [:new, :create, :update, :destroy, :my_posts]
+    before_action :authenticate_request, except: [:index]
+    # before_action :authenticate_request, only: [:new, :create, :update, :destroy, :my_posts,:share_post]
     # before_action :set_post, only: [:show, :update, :destroy, :more_posts_by_author]
 
   def index
@@ -88,90 +88,66 @@ end
   end
 
   def show
-    # @post = Post.find(params[:id])
-    if @current_user && !@current_user.already_following?(@post.user)
-        @current_user.followees << @post.user
-    end
     
     #   render json: @post, include: [:user, comments: { include: :user }]
     if Post.find(params[:id])
-      @post = Post.find(params[:id])
-      @post.increment_views
-    #   posts=@post.as_json(
-    #     methods: [:image_url],
-    #     include: [:user, :topic, { comments: { include: :user } }, { likes: { include: :user } }]
-    # )
-    # post_data=posts.map do |post|
-    #   {
-    #     id: post.id,
-    #     title: post.title,
-    #     topic: post.topic.name,
-    #     description: post.description,
-    #     # image: post.image,
-    #     likes_count: post.likes_count,
-    #     comments_count: post.commenets_count,
-    #     # published_at: post.published_at,
-    #     views: post.views,
-    #     read_time: post.min_read_time,
-    #     author_name: post.user.name,
-    #     published_at: post.created_at,
-    #     author_id: post.user.id
-    #     comments: post.comments.each { |comment| user_name: comment.user.name,content: comment.content},
-    #       # custom_post[:comments] << 
-    #     #   {
-    #     #       user_name: comment.user.name,
-    #     #       content: comment.content
-    #     #   }
-    #     # end,
-    #     likes: [],
-    #     image_url: post.image_url
-        
-    #   }
-    # custom_posts = []
-    # posts.each do |post|
-    #     custom_post = {
-    #     id: post.id,
-    #     title: post.title,
-    #     description: post.description,
-    #     author_name: post.user.name,
-    #     topic_name: post.topic.name,
-    #     likes_count: post.likes_count,
-    #     comments_count: post.commenets_count,
-    #     # views: post.views,
-    #     read_time: post.min_read_time,
-        
-    #     published_at: post.created_at,
-    #     author_id: post.user.id,
-    #     comments: [],
-    #     likes: [],
-    #     image_url: post.image_url
-    #     }
-        
-    #     post.comments.each do |comment|
-    #     custom_post[:comments] << {
-    #         user_name: comment.user.name,
-    #         content: comment.content
-    #     }
-    #     end
-        
-    #     post.likes.each do |like|
-    #     custom_post[:likes] << {
-    #         user_name: like.user.name
-    #     }
-    #     end
-        
-    #     custom_posts << custom_post
-    # end
-    # render json custom_posts;
-    # render json post_data
-      render json: @post.as_json(
-          methods: [:image_url],
-          include: [:user, :topic, { comments: { include: :user } }, { likes: { include: :user } }]
-      )
-    else
-      render json: { message: 'Post not found for the given id' }
+        @post = Post.find(params[:id])
+        if @post 
+          if check_view_limit
+              @post.increment_views    #increase the view_count of the post
+              @post_view = PostView.find_by(user: @current_user, post: @post)
+              if @post_view.nil?
+                @post_view = PostView.create(user: @current_user, post: @post, viewed_at: Time.zone.now)
+              end
+              post=@post
+              custom_posts = []
+              custom_post = {
+              id: post.id,
+              title: post.title,
+              description: post.description,
+              author_name: post.user.name,
+              topic_name: post.topic.name,
+              likes_count: post.likes_count,
+              comments_count: post.commenets_count,
+              # views: post.views,
+              read_time: post.min_read_time,
+              
+              published_at: DateTime.parse(post.created_at.to_s).strftime("%d-%m-%Y"),
+              author_id: post.user.id,
+              comments: [],
+              likes: [],
+              image: post.image_url
+              }
+              
+              post.comments.each do |comment|
+              custom_post[:comments] << {
+                  user_name: comment.user.name,
+                  content: comment.content
+              }
+              end
+              
+              post.likes.each do |like|
+              custom_post[:likes] << {
+                  user_name: like.user.name
+              }
+              end
+              
+              custom_posts << custom_post
+              render json: custom_posts, status: :ok
+              # response_data = {
+              #     post: @post,
+              #     file_url: (@post&.image&.attached?) ? url_for(@post.image) : nil,
+              #     comments: @post.comments,
+              #     more_posts_by_user: more_posts_by_user
+              # }
+              # render json: response_data, status: :ok  
+          else
+              render json: { message:"views exhausted" }
+          end
+      else
+          render json: { errors: "Post Not Found" }, status: :not_found
+      end
     end
-    # render json: @post, include: [:user, :topic, :comments, :likes]
   end
 
   def create
@@ -211,13 +187,16 @@ end
     render json: { message: 'Post deleted successfully' }
   end
 
+#to share post to other through email
+  def share_post
+    @post = Post.find(params[:post_id])
+    recipient_email = params[:recipient_email]
+    message = params[:message]
+    ShareListAndPostMailer.share_post_email(current_user, @post, recipient_email, message).deliver_now
 
-  # def my_posts
-  #   # user = User.find( @current_user.id)
-  #   @user=current_user
-  #   posts = current_user.posts
-  #   render json: posts
-  # end
+    flash[:notice] = "Post shared successfully!"
+    redirect_to @post
+  end
 
   def my_posts
     # @post.user_id = current_user.id
@@ -305,4 +284,28 @@ end
     # params.require(:post).permit(:title,:description, :user_id,:topic_id,:min_read_time, :image)
     params.permit(:title,:description, :user_id,:topic_id, :image)
   end
+
+  def check_view_limit
+    daily_view_limit = get_daily_view_limit()
+    start_of_day = Time.zone.now.beginning_of_day
+    end_of_day = Time.zone.now.end_of_day
+
+    user_todays_views = PostView.where(user_id: current_user.id, viewed_at: start_of_day..end_of_day)
+    todays_view_count=user_todays_views.count
+    todays_view_count < daily_view_limit
+  end
+  def get_daily_view_limit
+    subscription = @current_user.subscription_plan
+
+    if subscription.nil?
+      daily_view_limit = 1
+    else
+      daily_view_limit = subscription.max_posts_per_day
+    end
+    daily_view_limit
+  end
+
+
+
+
 end

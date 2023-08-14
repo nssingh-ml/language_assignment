@@ -1,13 +1,13 @@
 class User < ApplicationRecord
 
-    # // Set Up Enums for Subscription Tiers
-    enum subscription: {
-    free: 0,       # 0 corresponds to "free"
-    tier1: 1,      # 1 corresponds to "tier1"
-    tier2: 2,      # 2 corresponds to "tier2"
-    tier3: 3,      # 3 corresponds to "tier3"
-    tier4: 4       # 4 corresponds to "tier4"
-  }
+  #   # // Set Up Enums for Subscription Tiers
+  #   enum subscription: {
+  #   free: 0,       # 0 corresponds to "free"
+  #   tier1: 1,      # 1 corresponds to "tier1"
+  #   tier2: 2,      # 2 corresponds to "tier2"
+  #   tier3: 3,      # 3 corresponds to "tier3"
+  #   tier4: 4       # 4 corresponds to "tier4"
+  # }
 
     has_many :posts, dependent: :destroy
     has_many :likes, dependent: :destroy
@@ -19,6 +19,10 @@ class User < ApplicationRecord
 
     # has_many :post_revisions, foreign_key: 'editor_id'
     has_many :post_revisions, through: :posts
+    belongs_to :subscription_plan, optional: true
+
+    has_many :post_views
+    has_many :viewed_posts, through: :post_views, source: :post
 
 
 
@@ -42,39 +46,5 @@ class User < ApplicationRecord
     def already_following?(user)
     followees.exists?(followee: user)
     end
-
-
-    def can_view_post?(post)
-        case subscription
-        when "free", "tier1"
-          true  # Free and tier1 users can view all posts
-        when "tier2"
-          user_posts_today = posts.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day).count
-          if user_posts_today < 3
-            true
-          else
-            # Add a warning message here for the user
-            "You have reached your limit of 3 posts for today. To view more posts, consider upgrading to a higher tier."
-          end
-        when "tier3"
-          user_posts_today = posts.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day).count
-          if user_posts_today < 5
-            true
-          else
-            # Add a warning message here for the user
-            "You have reached your limit of 5 posts for today. To view more posts, consider upgrading to a higher tier."
-          end
-        when "tier4"
-          user_posts_today = posts.where(created_at: Time.zone.now.beginning_of_day..Time.zone.now.end_of_day).count
-          if user_posts_today < 10
-            true
-          else
-            # Add a warning message here for the user
-            "You have reached your limit of 10 posts for today. To view more posts, consider upgrading to a higher tier."
-          end
-        else
-          false # Default case: no access
-        end
-      end
     
 end

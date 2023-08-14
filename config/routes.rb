@@ -32,9 +32,10 @@ Rails.application.routes.draw do
   get '/posts/:id', to: 'posts#show'
   post '/posts/create', to: 'post#create'
   put  '/posts/update/:id', to: 'post#update'
-  delete '/posts/delete/:id', to: 'posts#delete_post'
+  delete '/posts/delete/:id', to: 'posts#destroy'
   get '/posts/search', to: 'posts#search'
-
+#share post
+  post '/posts/share/:post_id', to: 'posts#share_post'     #parameters(:message,:recipient_email also need to passed)
   # Level 3 features
   get '/my_posts', to: 'posts#my_posts'
   get '/top_posts', to: 'posts#top_posts'
@@ -64,6 +65,7 @@ Rails.application.routes.draw do
   post '/users/saveForLater/:post_id', to:'users#save_for_later'
   get '/users/savedPosts', to: 'users#show_all_saved'
   get '/users/my_details', to: 'users#my_details'
+  get 'users/my_subscription', to: 'users#my_subscription'    #subcription of current user
   
 
   #follower
@@ -106,7 +108,7 @@ Rails.application.routes.draw do
   #level five
   #lists
   resources :lists, only: [:create, :index, :show] do
-    post 'share', on: :member
+    post 'share', on: :member       #to share list through mail(:id -list_id and :recipient_email-email parameter of recipient)
     post 'add_post', on: :member   #/lists/:id/add_post  (:post_id as a parameter, and :id is list id)
     
   end
