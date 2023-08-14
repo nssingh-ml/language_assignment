@@ -7,7 +7,7 @@ class PaymentsController < ApplicationController
         # Get the current user
         user = current_user
     
-        # # # Tokenize the payment information
+        
         # when user make payment it passed the stripe token for testing this is not needed
         # token = params[:stripeToken]
         token = "tok_in"      #by default test token for india but it should follow all the rbi guide lines
