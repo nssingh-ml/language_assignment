@@ -102,8 +102,8 @@ Rails.application.routes.draw do
  #revision history
   resources :post_revisions, only: [:index, :show, :create]
   get 'revision_history/post/:post_id', to: 'post_revisions#index'
-  #don't need that but if we want specific revison_hostory of a post we can use this url with :id is revision_history id
-  # get 'revision_history/post/:post_id/:id', to: 'post_revisions#show'
+  # to revert the Post to its previous version.'
+  get 'revision_history/revert_post/:post_id/:revision_id', to: 'post_revisions#revert_to_previous_postversion'
 
   #level five
   #lists

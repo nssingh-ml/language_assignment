@@ -1,4 +1,5 @@
 class PostRevisionsController < ApplicationController
+  before_action :authenticate_request
     def index
         @post = Post.find(params[:post_id])
         @revisions = @post.post_revisions
@@ -23,6 +24,17 @@ class PostRevisionsController < ApplicationController
           render json: { errors: @revision.errors.full_messages }, status: :unprocessable_entity
         end
       end
+
+
+      def revert_to_previous_postversion
+        @post = Post.find(params[:post_id])
+        @revision = @post.post_revisions.find(params[:revision_id])
+        
+        @post.update(description: @revision.content)
+        # redirect_to @post, notice: 'Post reverted to a previous version.'
+        redirect_to "/posts/#{@post.id}", notice: 'Post reverted to a previous version.'
+      end
+
 
       private
     

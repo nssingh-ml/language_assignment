@@ -39,13 +39,6 @@ class UsersController < ApplicationController
     end
   end
 
-  # def my_posts
-  #   # user = User.find( @current_user.id)
-  #   @user=current_user
-  #   posts = current_user.posts
-  #   render json: posts
-  # end
-
   def destroy
     @user = User.find(params[:id])
     @user.destroy
@@ -118,8 +111,7 @@ class UsersController < ApplicationController
 
     def user_params
       params.permit(:name, :password, :email, :mob_no, :about)
-      # params.require(:post).permit(:name, :password, :email, :mob_no, :about)
-      # require(:post)
+      
     end
 end
 # end
