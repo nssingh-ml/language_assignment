@@ -97,6 +97,7 @@ Rails.application.routes.draw do
 
  # Payments
  post '/payments/create', to: 'payments#create'   #:amount as parameter
+ get '/payments/payment_test', to: 'payments#payment_test'
 
 
  #revision history

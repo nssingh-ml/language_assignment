@@ -74,5 +74,5 @@ Rails.application.configure do
   # config.stripe.publishable_key = ENV['pk_test_51NeHfNSEGkcbRibw9zbTxGOJxJA4YSVMSGLNTaPh4uQBe77MHvjqYHdDhGdBLmXHhqAHIgarumij1LziNFoLmUWT00i5beQDrE']
 
 
-  config.hosts << "e245-117-96-170-57.ngrok-free.app"
+  # config.hosts << "e245-117-96-170-57.ngrok-free.app"
 end
